@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { AdminRoute, VandorRoute } from "./routes";
 import bodyParser from "body-parser";
 import mongoose, { ConnectOptions } from "mongoose";
-import { MONGO_URI } from "./config";
 
 dotenv.config();
 
@@ -17,15 +16,18 @@ app.use("/vandor", VandorRoute);
 
 //Databse Connection
 mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  } as ConnectOptions)
+  .connect(
+    process.env.MONGO_CONNECT_URI as string,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as ConnectOptions
+  )
   .then((res) => console.log("Database Connect successfully"))
   .catch((err) => console.log(err));
 
 const port = process.env.PORT;
 app.listen(port, () => {
-//   console.clear();
+  //   console.clear();
   console.log(`Server is listening on Port :${port}`);
 });
