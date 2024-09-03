@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { Vandor } from "../models";
+import { Food, Vandor } from "../models";
 import { GenerateSignature, matchPassword } from "../utility";
 import { EditVandorInput, vandorLoginInput } from "../dto";
+import { createFoodInputs } from "../dto/Food.dto";
 
 export const vandorLogin = async (
   req: Request,
@@ -90,6 +91,7 @@ export const updateVandorProfile = async (
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const updateVandorService = async (
   req: Request,
   res: Response,
@@ -109,6 +111,104 @@ export const updateVandorService = async (
       }
     }
     return res.status(400).json({ message: "Vandor Not found" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const addFood = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+
+    if (user) {
+      const { name, description, foodType, readyTime, price, category } = <
+        createFoodInputs
+      >req.body;
+
+      const vandor = await Vandor.findById(user._id);
+
+      if (vandor !== null) {
+        const files = req.files as [Express.Multer.File];
+
+        const images = files?.map((file: Express.Multer.File) => file.filename);
+
+        const createFood = await Food.create({
+          vandorId: vandor._id,
+          name,
+          description,
+          category,
+          foodType,
+          images: images,
+          readyTime,
+          price,
+          rating: 0,
+        });
+
+        if (createFood !== null) {
+          vandor.foods.push(createFood);
+          const result = await vandor.save();
+          return res.status(200).json(result);
+        }
+      }
+      return res.status(400).json({ message: "Vandor not exist" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getFoods = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+
+    if (user) {
+      const foods = await Food.find({ vandorId: user._id });
+
+      if (foods !== null) {
+        return res.status(200).json(foods);
+      }
+    }
+    return res.status(400).json({ message: "Foods Information not found" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateVandorCoverImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+
+    if (user) {
+      const vandor = await Vandor.findById(user._id);
+
+      if (vandor !== null) {
+        const files = req.files as [Express.Multer.File];
+
+        const images = files?.map((file) => file.filename);
+
+        vandor.coverImages.push(...images);
+
+        const result = await vandor.save();
+
+        return res.status(200).json(result);
+      }
+    }
+    return res.status(400).json({ message: "Vandor Information not found" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });

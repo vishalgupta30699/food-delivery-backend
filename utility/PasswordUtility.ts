@@ -21,7 +21,7 @@ export const matchPassword = async (
 
 export const GenerateSignature = (payload: vandorPayload) => {
   const SECRET = process.env.JWT_SECRET;
-  console.log("secret", SECRET);
+  
   return jwt.sign(payload, SECRET as string, {
     expiresIn: process.env.JWT_EXPIRE_TIME,
   });

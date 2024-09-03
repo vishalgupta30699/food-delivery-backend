@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { AdminRoute, VandorRoute } from "./routes";
 import bodyParser from "body-parser";
 import mongoose, { ConnectOptions } from "mongoose";
+import path from "path";
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use("/admin", AdminRoute);
 app.use("/vandor", VandorRoute);
@@ -28,6 +30,6 @@ mongoose
 
 const port = process.env.PORT;
 app.listen(port, () => {
-  //   console.clear();
+  console.clear();
   console.log(`Server is listening on Port :${port}`);
 });
