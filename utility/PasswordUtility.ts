@@ -1,6 +1,6 @@
 import { Request } from "express";
 import bcrypt from "bcryptjs";
-import { vandorPayload, AuthPayload } from "../dto";
+import { AuthPayload } from "../dto";
 import jwt, { sign } from "jsonwebtoken";
 
 export const GenerateSalt = async () => {
@@ -19,9 +19,9 @@ export const matchPassword = async (
   return (await GeneratePassword(userPassword, salt)) === savedPassword;
 };
 
-export const GenerateSignature = (payload: vandorPayload) => {
+export const GenerateSignature = (payload: AuthPayload) => {
   const SECRET = process.env.JWT_SECRET;
-  
+
   return jwt.sign(payload, SECRET as string, {
     expiresIn: process.env.JWT_EXPIRE_TIME,
   });
@@ -35,9 +35,9 @@ export const VerifySignature = async (req: Request) => {
       signature.split(" ")[1],
       process.env.JWT_SECRET as string
     )) as AuthPayload;
-    
-    req.user=payload;
-    
+
+    req.user = payload;
+
     return true;
   }
 };

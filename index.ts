@@ -1,6 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import { AdminRoute, VandorRoute } from "./routes";
+import {
+  AdminRoute,
+  CustomerRoute,
+  ShoppingRoute,
+  VandorRoute,
+} from "./routes";
 import bodyParser from "body-parser";
 import mongoose, { ConnectOptions } from "mongoose";
 import path from "path";
@@ -15,6 +20,8 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use("/admin", AdminRoute);
 app.use("/vandor", VandorRoute);
+app.use(ShoppingRoute);
+app.use("/customer", CustomerRoute);
 
 //Databse Connection
 mongoose
