@@ -1,7 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import { plainToClass } from "class-transformer";
-import { CreateCustomerInputs, UserLoginInputs } from "../dto";
-import { validate, ValidationError } from "class-validator";
+import { Request, Response, NextFunction } from 'express';
+import { plainToClass } from 'class-transformer';
+import {
+  CreateCustomerInputs,
+  UpdateUserInputs,
+  UserLoginInputs,
+} from '../dto';
+import { validate } from 'class-validator';
 import {
   GenerateOTP,
   GeneratePassword,
@@ -9,8 +13,8 @@ import {
   GenerateSignature,
   matchPassword,
   onRequestOTP,
-} from "../utility";
-import { Customer } from "../models/Customer";
+} from '../utility';
+import { Customer } from '../models/Customer';
 
 export const CustomerSignUp = async (
   req: Request,
@@ -34,7 +38,7 @@ export const CustomerSignUp = async (
     const existCustomer = await Customer.findOne({ email });
 
     if (existCustomer !== null) {
-      return res.status(409).json({ message: "Customer already exist" });
+      return res.status(409).json({ message: 'Customer already exist' });
     }
 
     const salt = await GenerateSalt();
@@ -47,8 +51,8 @@ export const CustomerSignUp = async (
       password: hashPassword,
       phone,
       salt,
-      firstName: "",
-      lastName: "",
+      firstName: '',
+      lastName: '',
       otp,
       otp_expiry: expiry,
       verified: false,
@@ -71,10 +75,10 @@ export const CustomerSignUp = async (
       return res.status(201).json(signature);
     }
 
-    return res.status(400).json({ message: "Customer not created!" });
+    return res.status(400).json({ message: 'Customer not created!' });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -118,14 +122,14 @@ export const CustomerLoginIn = async (
           email: customer.email,
         });
       } else {
-        return res.status(400).json({ message: "Incorrect Password" });
+        return res.status(400).json({ message: 'Incorrect Password' });
       }
     }
 
-    return res.status(400).json({ message: "Customer not exist" });
+    return res.status(400).json({ message: 'Customer not exist' });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -157,15 +161,15 @@ export const CustomerVerify = async (
 
           return res.status(201).json(signature);
         } else {
-          return res.status(401).json({ message: "Incorrect OTP" });
+          return res.status(401).json({ message: 'Incorrect OTP' });
         }
       }
-      return res.status(400).json({ message: "Customer not found" });
+      return res.status(400).json({ message: 'Customer not found' });
     }
-    return res.status(400).json({ message: "Customer not found" });
+    return res.status(400).json({ message: 'Customer not found' });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -175,9 +179,30 @@ export const RequestOTP = async (
   next: NextFunction
 ) => {
   try {
+    const customer = req.user;
+
+    if (customer) {
+      const result = await Customer.findById(customer._id);
+
+      if (result !== null) {
+        const { otp, expiry } = GenerateOTP();
+
+        result.otp = otp;
+        result.otp_expiry = expiry;
+
+        await result.save();
+        //await onRequestOTP(otp, result.phone);
+
+        return res
+          .status(200)
+          .json({ message: 'OTP sent to your registred phone number!' });
+      }
+    }
+
+    return res.status(400).json({ message: 'Customer Not Found' });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -187,9 +212,19 @@ export const GetCustomerProfile = async (
   next: NextFunction
 ) => {
   try {
+    const customer = req.user;
+
+    if (customer) {
+      const profile = await Customer.findById(customer._id);
+
+      if (profile !== null) {
+        return res.status(200).json(profile);
+      }
+      return res.status(400).json({ message: 'Customer not found' });
+    }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -199,8 +234,37 @@ export const UpdateCustomerProfile = async (
   next: NextFunction
 ) => {
   try {
+    const customer = req.user;
+
+    const profileInput = plainToClass(UpdateUserInputs, req.body);
+
+    const profileErrors = await validate(profileInput, {
+      validationError: { target: false },
+    });
+
+    if (profileErrors.length > 0) {
+      return res.status(400).json(profileErrors);
+    }
+    const { firstName, lastName, address } = profileInput;
+
+    if (customer) {
+      const profile = await Customer.findByIdAndUpdate(
+        customer._id,
+        {
+          firstName,
+          lastName,
+          address,
+        },
+        { new: true }
+      );
+
+      if (profile) {
+        return res.status(200).json(profile);
+      }
+      return res.status(400).json({ message: 'Error on update profile' });
+    }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };

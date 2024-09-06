@@ -24,3 +24,14 @@ export class UserLoginInputs {
   @Length(6, 12)
   password: string;
 }
+
+export class UpdateUserInputs {
+  @Length(3, 16)
+  firstName: string;
+
+  @Length(3, 16)
+  lastName: string;
+
+  @Length(6, 36)
+  address: string;
+}

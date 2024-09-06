@@ -1,4 +1,4 @@
-import express from "express";
+import express from 'express';
 import {
   CustomerLoginIn,
   CustomerSignUp,
@@ -6,28 +6,28 @@ import {
   GetCustomerProfile,
   RequestOTP,
   UpdateCustomerProfile,
-} from "../controllers";
-import { Authenticate } from "../middlewares";
+} from '../controllers';
+import { Authenticate } from '../middlewares';
 
 const router = express.Router();
 
 /** Signup / Create Customer  */
-router.post("/signup", CustomerSignUp);
+router.post('/signup', CustomerSignUp);
 
 /** Login Customer */
-router.post("/login", CustomerLoginIn);
+router.post('/login', CustomerLoginIn);
 
-router.use(Authenticate)
+router.use(Authenticate);
 /** Verify Customer Account */
-router.patch("/verify", CustomerVerify);
+router.patch('/verify', CustomerVerify);
 
 /** OTP / Requesting OTP  */
-router.get("/otp", RequestOTP);
+router.get('/otp', RequestOTP);
 
 /** Customer Profile */
-router.get("/profile", GetCustomerProfile);
+router.get('/profile', GetCustomerProfile);
 
 /** Update Customer Profile */
-router.patch("profile", UpdateCustomerProfile);
+router.patch('/profile', UpdateCustomerProfile);
 
 export { router as CustomerRoute };
