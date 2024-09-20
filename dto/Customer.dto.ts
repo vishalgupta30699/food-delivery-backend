@@ -35,3 +35,8 @@ export class UpdateUserInputs {
   @Length(6, 36)
   address: string;
 }
+
+export class CreateOrderInput {
+  _id: string;
+  unit: number;
+}

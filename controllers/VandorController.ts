@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Food, Vandor } from "../models";
 import { GenerateSignature, matchPassword } from "../utility";
-import { EditVandorInput, vandorLoginInput } from "../dto";
-import { createFoodInputs } from "../dto/Food.dto";
+import { EditVandorInput, vandorLoginInput, createFoodInputs } from "../dto";
 
 export const vandorLogin = async (
   req: Request,
